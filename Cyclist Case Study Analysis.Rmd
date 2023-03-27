@@ -1,0 +1,304 @@
+---
+title: "Cyclist Case Study Analysis"
+author: "Malay Raj"
+date: "2023-03-02"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+## Divvy_Exercise_Full_Year_Analysis
+
+This analysis is based on the Divvy case study "'Sophisticated, Clear,
+and Polished': Divvy and Data Visualization".
+
+The purpose of this script is to consolidate downloaded Divvy data into
+a single dataframe and then conduct simple analysis to help answer the
+key question: "In what ways do members and casual riders use Divvy bikes
+differently?"
+
+## Installing required packages
+
+tidyverse for data import and wrangling lubridate for date functions
+ggplot for visualization
+
+```{r libraries}
+library(tidyverse)  #helps wrangle data
+library(lubridate)  #helps wrangle date attributes
+library(ggplot2)  #helps visualize data
+getwd() #displays your working directory
+```
+
+## Setting up working directory
+```{r}
+setwd("C:/Users/KIIT/OneDrive/Documents")
+```
+
+
+## STEP 1: COLLECT DATA
+
+Uploading Divvy datasets (csv files) here:
+
+```{r}
+q2_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202202-divvy-tripdata.csv")
+q3_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202203-divvy-tripdata.csv")
+q4_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202204-divvy-tripdata.csv")
+q5_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202205-divvy-tripdata.csv")
+q6_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202206-divvy-tripdata.csv")
+q7_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202207-divvy-tripdata.csv")
+q8_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202208-divvy-tripdata.csv")
+q9_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202209-divvy-publictripdata.csv")
+q10_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202210-divvy-tripdata.csv")
+q11_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202211-divvy-tripdata.csv")
+q12_2022 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202212-divvy-tripdata.csv")
+q01_2023 <- read_csv("C:/Users/KIIT/OneDrive/Documents/Datasets/202301-divvy-tripdata.csv")
+```
+
+## STEP 2: WRANGLE DATA AND COMBINE INTO A SINGLE FILE
+
+Comparing column names each of the files. While the names don't have to
+be in the same order, they DO need to match perfectly before we can use
+a command to join them into one file.
+
+```{r}
+colnames(q2_2022)
+colnames(q3_2022)
+colnames(q4_2022)
+colnames(q5_2022)
+colnames(q6_2022)
+colnames(q7_2022)
+colnames(q8_2022)
+colnames(q9_2022)
+colnames(q10_2022)
+colnames(q11_2022)
+colnames(q12_2022)
+colnames(q01_2023)
+```
+
+##Inspecting the dataframes and look for incongruencies
+
+```{r}
+str(q2_2022)
+str(q3_2022)
+str(q4_2022)
+str(q5_2022)
+str(q6_2022)
+str(q7_2022)
+str(q8_2022)
+str(q9_2022)
+str(q10_2022)
+str(q11_2022)
+str(q12_2022)
+str(q01_2023)
+```
+
+##Converting ride_id and rideable_type to character so that they can
+stack correctly:
+
+```{r}
+q2_2022 <-  mutate(q2_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type)) 
+q3_2022 <-  mutate(q3_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type)) 
+q4_2022 <-  mutate(q4_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type))
+q5_2022 <-  mutate(q5_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type)) 
+q6_2022 <-  mutate(q6_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type)) 
+q7_2022 <-  mutate(q7_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type))
+q8_2022 <-  mutate(q8_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type)) 
+q9_2022 <-  mutate(q9_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type)) 
+q10_2022 <-  mutate(q10_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type))
+q11_2022 <-  mutate(q11_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type)) 
+q12_2022 <-  mutate(q12_2022, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type)) 
+q01_2023 <-  mutate(q01_2023, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type))
+```
+
+##Converting started_at and ended_at of q2_2022 to datetime so that they
+can stack correctly
+
+```{r}
+q2_2022 <-  mutate(q2_2022, started_at = as_datetime(started_at)
+                   ,ended_at = as_datetime(ended_at))
+```
+
+##Stacking the individual quarter's data frames into one big data frame.
+
+```{r}
+all_trips <- bind_rows(q2_2022, q3_2022, q4_2022, q5_2022, q6_2022, q7_2022, q8_2022, q9_2022, q10_2022, q11_2022, q12_2022, q01_2023)
+```
+
+##Removing few columns such as:- start_lat start_lng end_lat end_lng
+because we don't need them in our analysis.
+
+```{r}
+all_trips <- all_trips %>%  
+  select(-c(start_lat, start_lng, end_lat, end_lng))
+```
+
+##STEP 3: CLEAN UP AND ADD DATA TO PREPARE FOR ANALYSIS Inspecting the
+new table that has been created.
+
+```{r}
+colnames(all_trips)  #List of column names
+nrow(all_trips)  #How many rows are in data frame?
+dim(all_trips)  #Dimensions of the data frame?
+head(all_trips)  #See the first 6 rows of data frame
+tail(all_trips)  #See the last 6 rows of data frame
+str(all_trips)  #See list of columns and data types (numeric, character, etc)
+summary(all_trips)  #Statistical summary of data. Mainly for numerics.
+```
+
+## Checking number of member and casual riders.
+
+```{r}
+table(all_trips$member_casual)
+```
+
+##There are a few problems we will need to fix:
+
+(1) Add columns that list the date, month, day, and year of each ride
+    This will allow us to aggregate ride data for each month, day, or
+    year ... before completing these operations we could only aggregate
+    at the ride level.
+
+(2) We will want to add a calculated field for length of ride.We will
+    add "ride_length" to the entire dataframe.
+
+```{r}
+all_trips$date <- as.Date(all_trips$started_at) #The default format is yyyy-mm-dd
+all_trips$month <- format(as.Date(all_trips$date), "%m")
+all_trips$day <- format(as.Date(all_trips$date), "%d")
+all_trips$year <- format(as.Date(all_trips$date), "%Y")
+all_trips$day_of_week <- format(as.Date(all_trips$date), "%A")
+
+all_trips$ride_length <- difftime(all_trips$ended_at,all_trips$started_at)
+```
+
+## Inspecting the structure of the columns:
+
+```{r}
+str(all_trips)
+```
+
+## Converting "ride_length" from Factor to numeric so we can run calculations on the data.
+
+```{r}
+is.factor(all_trips$ride_length)
+all_trips$ride_length <- as.numeric(as.character(all_trips$ride_length))
+is.numeric(all_trips$ride_length)
+```
+
+## REMOVING BAD DATA
+
+## There are some rides where tripduration shows up as negative, including several hundred rides where Divvy took bikes out of circulation for Quality Control reasons. We will want to delete these rides.
+
+We will create a new version of the dataframe (v2) since data is being
+removed.
+
+```{r}
+all_trips_v2 <- all_trips[!(all_trips$start_station_name == "HQ QR" | all_trips$ride_length<0),]
+```
+
+## STEP 4: CONDUCTING DESCRIPTIVE ANALYSIS
+
+Descriptive analysis on ride_length (all figures in seconds).
+
+```{r}
+mean(all_trips_v2$ride_length) #straight average (total ride length / rides)
+median(all_trips_v2$ride_length) #midpoint number in the ascending array of ride lengths
+max(all_trips_v2$ride_length) #longest ride
+min(all_trips_v2$ride_length) #shortest ride
+```
+
+## Condensing the four lines above to one line using summary() on the specific attribute
+
+```{r}
+summary(all_trips_v2$ride_length)
+```
+
+## Comparing members and casual users
+
+```{r}
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = mean)
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = median)
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = max)
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = min)
+```
+
+## See the average ride time by each day for members vs casual users
+
+```{r}
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual + all_trips_v2$day_of_week, FUN = mean)
+```
+
+## As we can notice that the days of the week are out of order. Let's fix that.
+
+```{r}
+all_trips_v2$day_of_week <- ordered(all_trips_v2$day_of_week, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+```
+
+## Now, we'll see the average ride time by each day for members vs casual users
+
+```{r}
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual + all_trips_v2$day_of_week, FUN = mean)
+```
+
+## Analyzing ridership data by type and weekday
+
+```{r}
+all_trips_v2 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>% 
+  group_by(member_casual, weekday) %>% 
+  dplyr::summarise(number_of_rides = dplyr::n()
+            ,average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, weekday)
+```
+
+## Let's visualize the number of rides by rider type.
+
+```{r}
+all_trips_v2 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>% 
+  group_by(member_casual, weekday) %>% 
+  dplyr::summarise(number_of_rides = dplyr::n()
+            ,average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, weekday)  %>% 
+  ggplot(aes(x = weekday, y = number_of_rides, fill = member_casual)) +
+  geom_col(position = "dodge")
+```
+
+## Let's create a visualization for average duration
+
+```{r}
+all_trips_v2 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>% 
+  group_by(member_casual, weekday) %>% 
+  dplyr::summarise(number_of_rides = dplyr::n()
+            ,average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, weekday)  %>% 
+  ggplot(aes(x = weekday, y = average_duration, fill = member_casual)) +
+  geom_col(position = "dodge")
+```
+
+## STEP 5: EXPORT SUMMARY FILE FOR FURTHER ANALYSIS
+
+Creating a csv file that we will visualize for further analysis.
+
+```{r}
+counts <- aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual + all_trips_v2$day_of_week, FUN = mean)
+
+write.csv(counts, file = 'C:/Users/KIIT/OneDrive/Documents/avg_ride_length.csv')
+```
